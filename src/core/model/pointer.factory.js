@@ -16,6 +16,13 @@
       this.vertical = vertical;
       this.settings = angular.copy(_constructor.settings);
       this.threshold = this.settings.threshold;
+
+      this.keyCode = Object.freeze({
+        'left': 37,
+        'up': 38,
+        'right': 39,
+        'down': 40,
+      });
     };
 
     SliderPointer.prototype.onmousedown = function( evt ) {
@@ -93,6 +100,36 @@
       else
         this.ptr.css({top:this.value.prc+'%', marginTop: -5});
       this.parent.redraw(this);
+    };
+
+    SliderPointer.prototype.onkeydown = function(evt) {
+      var stepValue = this.settings.step ? this.settings.step : 10;
+      var flag = false;
+
+      switch (evt.keyCode) {
+        case this.keyCode.left:
+        case this.keyCode.down:
+          this.set(this.value.origin - stepValue);
+          flag = true;
+          break;
+
+        case this.keyCode.right:
+        case this.keyCode.up:
+          this.set(this.value.origin + stepValue);
+          flag = true;
+          break;
+
+        default:
+          break;
+      }
+
+      if (flag) {
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+
+      if( this.settings.cb && angular.isFunction(this.settings.cb))
+        this.settings.cb.call( this.parent, this.parent.getValue(), !this.is.drag );
     };
 
     return SliderPointer;
