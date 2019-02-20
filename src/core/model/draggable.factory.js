@@ -17,6 +17,8 @@
       this.ptr.css({ position: 'absolute' });
     };
 
+    Draggable.prototype.onkeydown = function(){};
+
     Draggable.prototype.onmousemove = function( evt, x, y ){
       this.ptr.css({ left: x, top: y });
     };
@@ -84,7 +86,8 @@
         'down': { touch : 'touchstart', nonTouch : 'mousedown' },
         'move': { touch : 'touchmove', nonTouch : 'mousemove' },
         'up'  : { touch : 'touchend', nonTouch: 'mouseup'},
-        'mousedown'  : { touch : 'mousedown', nonTouch : 'mousedown' }
+        'mousedown'  : { touch : 'mousedown', nonTouch : 'mousedown' },
+        'keypress'  : { touch : 'keydown', nonTouch : 'keydown' }
       };
 
       var documentElt = angular.element(window.document);
@@ -124,8 +127,16 @@
         self._mouseup( event );
       });      
      
+      this._bindEvent( this.ptr, 'keypress', function(event) {
+        self._keydown( event );
+      });
+
       // TODO see if needed
       this.events();
+    };
+
+    Draggable.prototype._keydown = function( evt ){
+      this.onkeydown( evt );
     };
 
     Draggable.prototype._mousedown = function( evt ){

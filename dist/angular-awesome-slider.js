@@ -277,6 +277,8 @@
       this.ptr.css({ position: 'absolute' });
     };
 
+    Draggable.prototype.onkeydown = function(){};
+
     Draggable.prototype.onmousemove = function( evt, x, y ){
       this.ptr.css({ left: x, top: y });
     };
@@ -344,7 +346,8 @@
         'down': { touch : 'touchstart', nonTouch : 'mousedown' },
         'move': { touch : 'touchmove', nonTouch : 'mousemove' },
         'up'  : { touch : 'touchend', nonTouch: 'mouseup'},
-        'mousedown'  : { touch : 'mousedown', nonTouch : 'mousedown' }
+        'mousedown'  : { touch : 'mousedown', nonTouch : 'mousedown' },
+        'keypress'  : { touch : 'keydown', nonTouch : 'keydown' }
       };
 
       var documentElt = angular.element(window.document);
@@ -384,8 +387,16 @@
         self._mouseup( event );
       });      
      
+      this._bindEvent( this.ptr, 'keypress', function(event) {
+        self._keydown( event );
+      });
+
       // TODO see if needed
       this.events();
+    };
+
+    Draggable.prototype._keydown = function( evt ){
+      this.onkeydown( evt );
     };
 
     Draggable.prototype._mousedown = function( evt ){
@@ -468,6 +479,13 @@
       this.vertical = vertical;
       this.settings = angular.copy(_constructor.settings);
       this.threshold = this.settings.threshold;
+
+      this.keyCode = Object.freeze({
+        'left': 37,
+        'up': 38,
+        'right': 39,
+        'down': 40,
+      });
     };
 
     SliderPointer.prototype.onmousedown = function( evt ) {
@@ -545,6 +563,36 @@
       else
         this.ptr.css({top:this.value.prc+'%', marginTop: -5});
       this.parent.redraw(this);
+    };
+
+    SliderPointer.prototype.onkeydown = function(evt) {
+      var stepValue = this.settings.step ? this.settings.step : 10;
+      var flag = false;
+
+      switch (evt.keyCode) {
+        case this.keyCode.left:
+        case this.keyCode.down:
+          this.set(this.value.origin - stepValue);
+          flag = true;
+          break;
+
+        case this.keyCode.right:
+        case this.keyCode.up:
+          this.set(this.value.origin + stepValue);
+          flag = true;
+          break;
+
+        default:
+          break;
+      }
+
+      if (flag) {
+        evt.preventDefault();
+        evt.stopPropagation();
+      }
+
+      if( this.settings.cb && angular.isFunction(this.settings.cb))
+        this.settings.cb.call( this.parent, this.parent.getValue(), !this.is.drag );
     };
 
     return SliderPointer;
@@ -1253,8 +1301,8 @@
           '<i class="default"></i>'+
           '<i class="after"></i>'+          
         '</div>' +
-        '<div class="jslider-pointer"></div>' +
-        '<div class="jslider-pointer jslider-pointer-to"></div>' +
+        '<div class="jslider-pointer" role="slider" tabindex="0"></div>' +
+        '<div class="jslider-pointer jslider-pointer-to" role="slider" tabindex="0"></div>' +
         '<div class="jslider-label" ng-show="options.limits"><span ng-bind="limitValue(options.from)"></span>{{options.dimension}}</div>' +
         '<div class="jslider-label jslider-label-to" ng-show="options.limits"><span ng-bind="limitValue(options.to)"></span>{{options.dimension}}</div>' +
         '<div class="jslider-value"><span></span>{{options.dimension}}</div>' +
