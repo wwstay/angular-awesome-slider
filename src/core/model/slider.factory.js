@@ -425,9 +425,12 @@
           sizes.right = false;
         }
 
-        if (!self.settings.vertical)
-          label.o.css({ left: prc + "%", marginLeft: sizes.margin+"px", right: "auto" });
-        else
+        if (!self.settings.vertical) {
+          if (prc!==100)
+            label.o.css({ left: prc + "%", marginLeft: sizes.margin+"px", right: "auto" });
+          else
+            label.o.css({ left: "calc(100% - " + (-sizes.margin)+"px)", marginLeft: sizes.margin+"px", right: "auto" });
+        } else
           label.o.css({ top: prc + "%", marginLeft: "20px", marginTop: sizes.margin, bottom: "auto" });
         if(sizes.right && self.sizes.domWidth > 0) {
           if (!self.settings.vertical)
